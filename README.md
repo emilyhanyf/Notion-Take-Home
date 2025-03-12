@@ -17,14 +17,20 @@ After you integrate page permission and get database ID, add the following field
 NOTION_DATABASE_ID=<your-notion-database-internal-integration-secret-id>
 ```
 
-### 3. Run commands
+### 3. Set up database
+Make sure you set up your databse so that there are four fields: 
+- "Message" should be the “Title” property
+- "Sender" and “Recipient” should be “Text” property types, not “Person” property types
+- "Timestamp" should be "Date" property type
+
+### 4. Run commands
 Install dependencies by running:
 ```
 npm install 
 ```
 Run the program in your terminal:
 ```
-node main.jsx
+npm run
 ```
 
 ## References

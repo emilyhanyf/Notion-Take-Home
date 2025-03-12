@@ -3,5 +3,26 @@
     "@notionhq/client": "^2.2.16",
     "dotenv": "^16.4.7",
     "readline": "^1.3.0"
-  }
+  },
+  "name": "notion-take-home",
+  "version": "1.0.0",
+  "description": "Take home assignment for Notion AI internship",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node mail.jsx",
+    "run": "node mail.jsx"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emilyhanyf/Notion-Take-Home.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emilyhanyf/Notion-Take-Home/issues"
+  },
+  "homepage": "https://github.com/emilyhanyf/Notion-Take-Home#readme"
 }

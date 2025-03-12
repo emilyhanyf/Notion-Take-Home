@@ -97,9 +97,7 @@ async function read(user) {
                 }
             }
         });
-
-        const messages = filtered.results;
-        if (messages.length === 0) {
+        if (filtered.results.length === 0) {
             console.log(`There are currently no messages for ${user}.\n`);
             return;
         }
@@ -107,12 +105,12 @@ async function read(user) {
         // Print out each message received by recipient
         console.log(`Messages ${user} (count: ${messages.length}): `);
         console.log(`-------------------------------------------------`);
-        messages.forEach(message => {
+        for (message in filtered.results) {
             console.log(`From: ${message.properties.Sender?.rich_text[0]?.text.content}`);
             console.log(`${convertTimestamp(message.properties.Timestamp?.date.start)}`);
             console.log(`${message.properties.Message?.title[0]?.text.content}`);
             console.log(`-------------------------------------------------`);
-        });
+        };
     } catch (error) {
         console.error("Error while reading messages: ", error.message);
         console.log();
@@ -121,7 +119,38 @@ async function read(user) {
 
 async function deleteAll(sender, recipient) {
     try {
-        
+        const filtered = await notion.databases.query({
+            database_id: DATABASE_ID,
+            filter: { 
+                and: [ 
+                    {
+                        property: "Sender",
+                        rich_text: {
+                            equals: sender
+                        }
+                    },
+                    {
+                        property: "Recipient",
+                        rich_text: {
+                            equals: recipient
+                        }
+                    }
+                ]
+            }
+        });
+
+        if (filtered.results.length === 0) {
+            console.log(`There are currently no messages that ${sender} send to ${recipient}.\n`);
+            return;
+        }
+
+        for (const message of filtered.results) {
+            await notion.message.update({
+                page_id: pageId,
+                archieved: true,
+            });
+        }
+        console.log(`Finished deleting all messages ${sender} send to ${recipient}.\n`);
     } catch (error) {
         console.error("Error while deleting messages: ", error.message);
         console.log();
