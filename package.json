@@ -10,9 +10,7 @@
   "main": "index.js",
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node mail.jsx",
-    "run": "node mail.jsx"
+    "start": "node main.jsx"
   },
   "repository": {
     "type": "git",

@@ -1,3 +1,7 @@
+/*
+This file starts the command line Notion Mail application
+*/
+
 const { main_loop } = require("./mail.jsx");
 
 function main() {

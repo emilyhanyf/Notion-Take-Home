@@ -1,8 +1,18 @@
-/* Set up API keys and connect to database */ 
+/*
+This file contains functions that allow users to send Notion mail to database directly in their terminal:
+
+-- convertTimeStamp(timestamp): extracts date and time from an ISO timestamp
+-- send(sender, recipient, message): sends a message from sender to recipient (case sensitive)
+-- read(sender, recipient): prints out all messages from sender to recipient (case sensitive)
+-- deleteAll(sender, recipient): deletes all messages from sender to recipient (case sensitive)
+-- main_loop(): keeps prompting user for commands until users call 'quit'
+*/
+
 const { Client } = require("@notionhq/client");
 const readline = require("readline");
 require("dotenv").config();
 
+// Set up API keys and connect to database 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const DATABASE_ID = process.env.NOTION_DATABASE_ID;
 
@@ -103,14 +113,15 @@ async function read(user) {
         }
 
         // Print out each message received by recipient
+        const messages = filtered.results;
         console.log(`Messages ${user} (count: ${messages.length}): `);
         console.log(`-------------------------------------------------`);
-        for (message in filtered.results) {
+        messages.forEach (message => {
             console.log(`From: ${message.properties.Sender?.rich_text[0]?.text.content}`);
             console.log(`${convertTimestamp(message.properties.Timestamp?.date.start)}`);
             console.log(`${message.properties.Message?.title[0]?.text.content}`);
             console.log(`-------------------------------------------------`);
-        };
+        });
     } catch (error) {
         console.error("Error while reading messages: ", error.message);
         console.log();
@@ -124,30 +135,31 @@ async function deleteAll(sender, recipient) {
             filter: { 
                 and: [ 
                     {
-                        property: "Sender",
-                        rich_text: {
-                            equals: sender
+                        "property": "Sender",
+                        "rich_text": {
+                            "equals": sender
                         }
                     },
                     {
-                        property: "Recipient",
-                        rich_text: {
-                            equals: recipient
+                        "property": "Recipient",
+                        "rich_text": {
+                            "equals": recipient
                         }
                     }
                 ]
             }
         });
 
-        if (filtered.results.length === 0) {
+        const messages = filtered.results;
+        if (messages.length === 0) {
             console.log(`There are currently no messages that ${sender} send to ${recipient}.\n`);
             return;
         }
 
-        for (const message of filtered.results) {
-            await notion.message.update({
-                page_id: pageId,
-                archieved: true,
+        for (const message of messages) {
+            await notion.pages.update({
+                page_id: message.id,
+                in_trash: true,
             });
         }
         console.log(`Finished deleting all messages ${sender} send to ${recipient}.\n`);
@@ -162,7 +174,8 @@ function main_loop() {
     console.log("Please select an option: ");
     console.log("- send: Send mail to a user.");
     console.log("- read: Check a user's mail.");
-    console.log("- quit: Quit NotionMail.\n");
+    console.log("- quit: Quit NotionMail.");
+    console.log("- delete: Delete all messages from a sender to a recipient.\n");
 
     cli.question("Enter a command: ", command => {
         console.log()
@@ -181,12 +194,24 @@ function main_loop() {
                 });
             });
         } else if (command === "read") {
-            cli.question("User: ", user => {
+            cli.question("Recipient: ", user => {
                 read(user).then(() => main_loop());
             });
         } else if (command === "quit") {
             console.log("Quit NotionMail.\n");
             cli.close();
+        } else if (command === "delete") {
+            cli.question("Sender: ", sender => {
+                if (sender.length === 0) {
+                    sender = "Unknown sender";
+                }
+                cli.question("Recipient: ", recipient => {
+                    if (recipient.length === 0) {
+                        recipient = "Unknown recipient";
+                    }
+                    deleteAll(sender, recipient).then(() => main_loop());
+                });
+            });
         } else {
             console.log("Invalid command.\n");
             main_loop();
@@ -194,4 +219,4 @@ function main_loop() {
     });
 }
 
-module.exports = { send, read, main_loop };
+module.exports = { main_loop };
