@@ -7,31 +7,20 @@ This file contains functions that allow users to send Notion mail to database di
 -- deleteAll(sender, recipient): deletes all messages from sender to recipient (case sensitive)
 -- main_loop(): keeps prompting user for commands until users call 'quit'
 */
-
 const { Client } = require("@notionhq/client");
 const readline = require("readline");
 require("dotenv").config();
-
-// Set up API keys and connect to database 
-const NOTION_API_KEY = process.env.NOTION_API_KEY;
-const DATABASE_ID = process.env.NOTION_DATABASE_ID;
-
-if (!NOTION_API_KEY) {
-    console.error("Missing Notion API Key. Please edit .env to add the key.\n");
-    process.exit(1);
-}
-if (!DATABASE_ID) {
-    console.error("Missing Notion Database ID. Please edit .env to add the ID.\n");
-    process.exit(1);
-}
-
-const notion = new Client({ auth: NOTION_API_KEY });
+let notion;
 
 // Set up command line interface 
 const cli = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
+
+// Set up API keys and connect to database 
+const NOTION_API_KEY = process.env.NOTION_API_KEY;
+const DATABASE_ID = process.env.NOTION_DATABASE_ID;
 
 // Convert timestamp into time for printing
 function convertTimestamp(timestamp) {
@@ -169,49 +158,65 @@ async function deleteAll(sender, recipient) {
     }
 }
 
+const commandMap = {
+    "send": cmd_send,
+    "read": cmd_read,
+    "delete": cmd_del,
+    "quit": cmd_quit
+};
+
+async function cmd_send() {
+    cli.question("Sender: ", sender => {
+        if (sender.length === 0) {
+            sender = "Unknown sender";
+        }
+        cli.question("Recipient: ", recipient => {
+            if (recipient.length === 0) {
+                recipient = "Unknown recipient";
+            }
+            cli.question("Message: ", message => {
+                send(sender, recipient, message).then(() => main_loop());
+            });
+        });
+    });
+}
+
+async function cmd_read() {
+    cli.question("Recipient: ", user => {
+        read(user).then(() => main_loop());
+    });
+}
+
+async function cmd_quit() {
+    console.log("Quit NotionMail.\n");
+    cli.close();
+}
+
+async function cmd_del() {
+    cli.question("Sender: ", sender => {
+        if (sender.length === 0) {
+            sender = "Unknown sender";
+        }
+        cli.question("Recipient: ", recipient => {
+            if (recipient.length === 0) {
+                recipient = "Unknown recipient";
+            }
+            deleteAll(sender, recipient).then(() => main_loop());
+        });
+    });
+}
+
 // Main function for client interaction
 function main_loop() {
     console.log("Please select an option: ");
     console.log("- send: Send mail to a user.");
     console.log("- read: Check a user's mail.");
-    console.log("- quit: Quit NotionMail.");
-    console.log("- delete: Delete all messages from a sender to a recipient.\n");
+    console.log("- delete: Delete all messages from a sender to a recipient.");
+    console.log("- quit: Quit NotionMail.\n");
 
     cli.question("Enter a command: ", command => {
-        console.log()
-        if (command === "send") {
-            cli.question("Sender: ", sender => {
-                if (sender.length === 0) {
-                    sender = "Unknown sender";
-                }
-                cli.question("Recipient: ", recipient => {
-                    if (recipient.length === 0) {
-                        recipient = "Unknown recipient";
-                    }
-                    cli.question("Message: ", message => {
-                        send(sender, recipient, message).then(() => main_loop());
-                    });
-                });
-            });
-        } else if (command === "read") {
-            cli.question("Recipient: ", user => {
-                read(user).then(() => main_loop());
-            });
-        } else if (command === "quit") {
-            console.log("Quit NotionMail.\n");
-            cli.close();
-        } else if (command === "delete") {
-            cli.question("Sender: ", sender => {
-                if (sender.length === 0) {
-                    sender = "Unknown sender";
-                }
-                cli.question("Recipient: ", recipient => {
-                    if (recipient.length === 0) {
-                        recipient = "Unknown recipient";
-                    }
-                    deleteAll(sender, recipient).then(() => main_loop());
-                });
-            });
+        if (commandMap[command]) {
+            commandMap[command]();
         } else {
             console.log("Invalid command.\n");
             main_loop();
@@ -219,4 +224,22 @@ function main_loop() {
     });
 }
 
-module.exports = { main_loop };
+function init() {
+    console.log(`Welcome to NotionMail!`);
+    console.log(`-----------------------`);
+
+    if (!NOTION_API_KEY) {
+        console.error("Missing Notion API Key. Please edit .env to add the key.\n");
+        process.exit(1);
+    }
+    if (!DATABASE_ID) {
+        console.error("Missing Notion Database ID. Please edit .env to add the ID.\n");
+        process.exit(1);
+    }
+
+    notion = new Client({ auth: NOTION_API_KEY });
+
+    main_loop();
+}
+
+init();

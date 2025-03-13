@@ -31,6 +31,9 @@ There are many more functionalities and improvements I would like to add to this
 From a product perspective, I would like to improve users' experience by:
 - Add more creative command line components (ie. emojis or line arts) to make the command line experiment more "notion-like"
 
+From a technical perpsective:
+- It would make sense to create a class or file for each command (ie. read, send, delete), which makes the overall program more modular
+
 ## Usage
 ### 1. Acquire Notion API Key
 Here are the instructions on how to [set up Notion API Key](https://developers.notion.com/docs/create-a-notion-integration#getting-started).
@@ -63,7 +66,7 @@ Run the program in your terminal:
 ```
 npm start
 ```
-This will automatically run `node main.jsx `, which will start the program in your command line. 
+This will automatically run `node mail.jsx `, which will start the program in your command line. 
 
 ## References
 Here are the sources I used from Notion to set up the Notion API:
