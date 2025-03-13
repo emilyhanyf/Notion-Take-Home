@@ -158,6 +158,7 @@ async function deleteAll(sender, recipient) {
     }
 }
 
+// Maps each user input command to prompts/actions
 const commandMap = {
     "send": cmd_send,
     "read": cmd_read,
@@ -206,7 +207,7 @@ async function cmd_del() {
     });
 }
 
-// Main function for client interaction
+// Main loop that prompts user commands
 function main_loop() {
     console.log("Please select an option: ");
     console.log("- send: Send mail to a user.");
@@ -224,6 +225,7 @@ function main_loop() {
     });
 }
 
+// Initialize CLI interaction
 function init() {
     console.log(`Welcome to NotionMail!`);
     console.log(`-----------------------`);
